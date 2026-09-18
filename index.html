@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mr.InvoShop — Inventory &amp; Billing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <h1>Mr.InvoShop</h1>
+    <div class="sub">local inventory &amp; billing · saved on this device</div>
+  </div>
+  <div class="header-right">
+    <div class="sub" id="lastSaved">not yet saved</div>
+    <button class="btn-outline btn-small btn-on-dark" id="settingsBtn">Shop settings</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="inventory">Inventory</button>
+  <button class="tab-btn" data-tab="billing">New bill</button>
+  <button class="tab-btn" data-tab="history">Bill history</button>
+</nav>
+
+<main>
+
+  <section id="tab-inventory" class="tab-panel active">
+    <div class="stats">
+      <div class="stat">
+        <div class="label">TOTAL ITEMS</div>
+        <div class="value" id="statCount">0</div>
+      </div>
+      <div class="stat">
+        <div class="label">UNITS IN STOCK</div>
+        <div class="value" id="statUnits">0</div>
+      </div>
+      <div class="stat">
+        <div class="label">STOCK VALUE (₹)</div>
+        <div class="value" id="statValue">0</div>
+      </div>
+      <div class="stat alert">
+        <div class="label">LOW STOCK</div>
+        <div class="value" id="statLow">0</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="search" placeholder="Search by name or SKU…">
+      <select id="categoryFilter">
+        <option value="">All categories</option>
+      </select>
+      <button class="btn-primary" id="addBtn">+ Add item</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>SKU</th>
+          <th>Category</th>
+          <th>Qty</th>
+          <th>Price (₹)</th>
+          <th>Value (₹)</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="empty" id="emptyState" style="display:none;">No items yet. Add your first item to get started.</div>
+  </section>
+
+  <section id="tab-billing" class="tab-panel">
+    <div class="billing-layout">
+      <div class="billing-picker">
+        <div class="toolbar">
+          <input type="text" id="billSearch" placeholder="Search item to add to bill…">
+        </div>
+        <table>
+          <thead>
+            <tr><th>Item</th><th>In stock</th><th>Price (₹)</th><th></th></tr>
+          </thead>
+          <tbody id="billPickerBody"></tbody>
+        </table>
+        <div class="empty" id="billPickerEmpty" style="display:none;">No matching items in stock.</div>
+      </div>
+
+      <div class="billing-cart">
+        <h2>Current bill</h2>
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Qty</th><th>Price</th><th>Line total</th><th></th></tr>
+          </thead>
+          <tbody id="cartBody"></tbody>
+        </table>
+        <div class="empty" id="cartEmpty">No items added yet.</div>
+        <div class="cart-total">
+          <span>Grand total</span>
+          <span id="cartTotal" class="data-font">₹0.00</span>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Customer name (optional)</label>
+            <input type="text" id="customerName" placeholder="Walk-in customer">
+          </div>
+          <div class="field">
+            <label>Payment mode</label>
+            <select id="paymentMode">
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+              <option value="Credit">Credit / on account</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-outline" id="clearCartBtn">Clear bill</button>
+          <button class="btn-primary" id="completeSaleBtn">Complete sale &amp; deduct stock</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-history" class="tab-panel">
+    <table>
+      <thead>
+        <tr><th>Bill #</th><th>Date</th><th>Customer</th><th>Items</th><th>Total (₹)</th><th></th></tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+    <div class="empty" id="historyEmpty" style="display:none;">No bills recorded yet.</div>
+  </section>
+
+</main>
+
+<footer class="bottom">
+  <span id="footerNote">Data stays on this laptop only.</span>
+  <span>
+    <button class="btn-outline" id="exportBtn">Export backup (.json)</button>
+    <button class="btn-outline" id="importBtn">Import backup</button>
+    <input type="file" id="importFile" accept="application/json">
+  </span>
+</footer>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h2 id="modalTitle">Add item</h2>
+    <div class="field">
+      <label>Item name</label>
+      <input type="text" id="fName" placeholder="e.g. Parle-G 100g">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>SKU / code</label>
+        <input type="text" id="fSku" placeholder="e.g. PG-100">
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <input type="text" id="fCategory" placeholder="e.g. Snacks">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Quantity in stock</label>
+        <input type="number" id="fQty" min="0" step="1" placeholder="0">
+      </div>
+      <div class="field">
+        <label>Unit price (₹)</label>
+        <input type="number" id="fPrice" min="0" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="field">
+      <label>Low-stock alert threshold</label>
+      <input type="number" id="fThreshold" min="0" step="1" placeholder="e.g. 5">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="cancelBtn">Cancel</button>
+      <button class="btn-primary" id="saveBtn">Save item</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="settingsBackdrop">
+  <div class="modal">
+    <h2>Shop settings</h2>
+    <div class="field">
+      <label>Shop name</label>
+      <input type="text" id="sShopName" placeholder="e.g. Sharma General Store">
+    </div>
+    <div class="field">
+      <label>Address (optional)</label>
+      <input type="text" id="sAddress" placeholder="e.g. Main Bazaar Road, Mathura">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>GSTIN</label>
+        <input type="text" id="sGst" placeholder="e.g. 09ABCDE1234F1Z5">
+      </div>
+      <div class="field">
+        <label>Phone (optional)</label>
+        <input type="text" id="sPhone" placeholder="e.g. 98765 43210">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="settingsCancelBtn">Cancel</button>
+      <button class="btn-primary" id="settingsSaveBtn">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="receiptBackdrop">
+  <div class="modal receipt" id="receiptContent">
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
